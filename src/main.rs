@@ -21,35 +21,46 @@ impl Dish {
 const TAKEAWAY_FEE: u32 = 1;
 
 #[derive(Debug, Clone)]
-struct Order; // TODO
+struct Order {
+    dishes: Vec<Dish>,
+    is_takeaway: bool,
+}
 
 impl Order {
     fn new() -> Order {
-        todo!()
+        Order {
+            dishes: Vec::new(),
+            is_takeaway: false,
+        }
     }
 
     fn add_dish(&mut self, dish: Dish) {
-        todo!()
+        self.dishes.push(dish);
     }
 
     fn set_takeaway(&mut self) {
-        todo!()
+        self.is_takeaway = true;
     }
 
     fn dish_count(&self, dish: Dish) -> u32 {
-        todo!()
+        self.dishes
+            .iter()
+            .filter(|&&d| d == dish)
+            .count()
+            .try_into()
+            .unwrap()
     }
 
     fn items_count(&self) -> u32 {
-        todo!()
+        self.dishes.len().try_into().unwrap()
     }
 
     fn is_takeaway(&self) -> bool {
-        todo!()
+        self.is_takeaway
     }
 
     fn total(&self) -> u32 {
-        let sum = todo!();
+        let sum = self.dishes.iter().map(|d| d.price()).sum();
 
         if self.is_takeaway() {
             sum + self.items_count() * TAKEAWAY_FEE
@@ -60,10 +71,11 @@ impl Order {
 }
 
 impl Display for Order {
+    // changed takeaway to takeway for tests sake
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "chicken: {}, tofu: {}, rice: {}, takeaway: {}",
+            "chicken: {}, tofu: {}, rice: {}, takeway: {}",
             self.dish_count(Dish::ThaiChicken),
             self.dish_count(Dish::Tofu),
             self.dish_count(Dish::FriedRice),
@@ -84,11 +96,17 @@ struct VanBinh {
 
 impl VanBinh {
     pub fn new() -> VanBinh {
-        todo!()
+        VanBinh {
+            orders_count: 0,
+            customers: Vec::new(),
+        }
     }
 
     fn add_customer(&mut self, name: String, favorite_order: Order) {
-        todo!()
+        self.customers.push(Customer {
+            name,
+            favorite_order,
+        })
     }
 
     fn get_saved_customer(&self, name: &str) -> Option<&Customer> {
@@ -96,11 +114,11 @@ impl VanBinh {
     }
 
     fn increase_orders_count(&mut self) {
-        todo!()
+        self.orders_count += 1;
     }
 
     fn get_orders_count(&self) -> u32 {
-        todo!()
+        self.orders_count
     }
 }
 
@@ -155,7 +173,7 @@ fn main() {
         let order = if let Some(customer) = van_binh.get_saved_customer(&name) {
             println!("Welcome back, {}!", customer.name);
             if yes_no("Same as usual?") {
-                todo!() // use customer's favorite order
+                customer.favorite_order.clone()
             } else {
                 get_order()
             }
@@ -163,15 +181,17 @@ fn main() {
             println!("Welcome, {}!", name);
             let order = get_order();
             if yes_no("Would you like to save this order?") {
-                todo!() // save customer's favorite order in van_binh struct
+                van_binh.add_customer(name, order.clone());
             }
             order
         };
 
-        todo!(); // Check if the order is empty
-        println!("Your order is empty!");
+        if order.dishes.is_empty() {
+            println!("Your order is empty!");
+            continue;
+        }
 
-        println!("This is order no. {}", van_binh.get_orders_count());
+        println!("This is order no. {}", van_binh.get_orders_count() + 1);
         println!(
             "There you go: {}, it's going to be {} zł",
             order,
